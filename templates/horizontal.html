@@ -19,7 +19,7 @@
 		var barChartDiv = d3.select('#bar-chart');
 		var margin = { top: 20, right: 60, bottom: 60, left: 120 };
 		var width = barChartDiv.node().getBoundingClientRect().width - margin.left - margin.right;
-		var height = 600 - margin.top - margin.bottom;
+		var height = 500 - margin.top - margin.bottom;
 
 		var barChart = barChartDiv.append('svg')
 		  .attr('width', width + margin.left + margin.right)
@@ -33,7 +33,7 @@
 		var y = d3.scaleBand()
 		  .range([height, 0])
 		  .padding(0.2);
-
+		
 		x.domain([0, d3.max(data.bar_chart, function(d) { return d.value; })]);
 		y.domain(data.bar_chart.map(function(d) { return d.label; }));
 
@@ -61,15 +61,15 @@
 		  .attr('y', function(d) { return y(d.label); })
 		  .attr('width', function(d) { return x(d.value); })
 		  .attr('height', y.bandwidth())
-		  .attr('fill', 'steelblue');
+		  .attr('fill', 'red');
 
 		bars.append('text')
-		  .attr('x', function(d) { return x(d.value) - 5; })
+		  .attr('x', function(d) { return x(d.value) - 3; })
 		  .attr('y', function(d) { return y(d.label) + y.bandwidth() / 2; })
 		  .attr('alignment-baseline', 'middle')
 		  .attr('text-anchor', 'end')
 		  .text(function(d) { return d.value; })
-		  .attr('font-size', '10px')
+		  .attr('font-size', '14px')
 		  .attr('fill', 'black')
 		  .attr('dy', '0.35em')
 		  .attr('dx', 45);
@@ -79,7 +79,7 @@
 		  .attr('x', width / 2)
 		  .attr('y', height + margin.bottom - 10)
 		  .attr('text-anchor', 'middle')
-		  .text('Population')
+		  .text('Count')
 		  .attr('fill', '#888')
 		  .attr('font-weight', 'bold');
 
@@ -89,7 +89,7 @@
 		  .attr('x', -height / 2)
 		  .attr('y', -margin.left + 15)
 		  .attr('text-anchor', 'middle')
-		  .text('State')
+		  .text('Letter')
 		  .attr('fill', '#888')
 		  .attr('font-weight', 'bold');
 
