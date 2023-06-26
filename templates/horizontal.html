@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Data Visualization</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+  <h1>Data Visualization</h1>
+  <div id="bar-chart"></div>
+  <div id="pie-chart"></div>
+  <div id="scatter-plot"></div>
+
+  <script>
+    // Load the data from the Flask endpoint
+    // Generate the bar chart
+	d3.json('/data')
+	.then(function(data) {
+		// Generate the bar chart
+		var barChartDiv = d3.select('#bar-chart');
+		var margin = { top: 20, right: 60, bottom: 60, left: 120 };
+		var width = barChartDiv.node().getBoundingClientRect().width - margin.left - margin.right;
+		var height = 600 - margin.top - margin.bottom;
+
+		var barChart = barChartDiv.append('svg')
+		  .attr('width', width + margin.left + margin.right)
+		  .attr('height', height + margin.top + margin.bottom)
+		  .append('g')
+		  .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+		var x = d3.scaleLinear()
+		  .range([0, width]);
+
+		var y = d3.scaleBand()
+		  .range([height, 0])
+		  .padding(0.2);
+
+		x.domain([0, d3.max(data.bar_chart, function(d) { return d.value; })]);
+		y.domain(data.bar_chart.map(function(d) { return d.label; }));
+
+		barChart.append('g')
+		  .call(d3.axisBottom(x))
+		  .attr('transform', 'translate(0,' + height + ')')
+		  .attr('color', '#888')
+		  .selectAll('text')
+		  .attr('dy', '0.35em');
+
+		barChart.append('g')
+		  .call(d3.axisLeft(y))
+		  .attr('color', '#888')
+		  .selectAll('text')
+		  .attr('dy', '0.35em')
+		  .attr('dx', '-0.35em');
+
+		var bars = barChart.selectAll('.bar')
+		  .data(data.bar_chart)
+		  .enter()
+		  .append('g')
+		  .attr('class', 'bar');
+
+		bars.append('rect')
+		  .attr('y', function(d) { return y(d.label); })
+		  .attr('width', function(d) { return x(d.value); })
+		  .attr('height', y.bandwidth())
+		  .attr('fill', 'steelblue');
+
+		bars.append('text')
+		  .attr('x', function(d) { return x(d.value) - 5; })
+		  .attr('y', function(d) { return y(d.label) + y.bandwidth() / 2; })
+		  .attr('alignment-baseline', 'middle')
+		  .attr('text-anchor', 'end')
+		  .text(function(d) { return d.value; })
+		  .attr('font-size', '10px')
+		  .attr('fill', 'black')
+		  .attr('dy', '0.35em')
+		  .attr('dx', 45);
+
+		barChart.append('text')
+		  .attr('class', 'x-axis-label')
+		  .attr('x', width / 2)
+		  .attr('y', height + margin.bottom - 10)
+		  .attr('text-anchor', 'middle')
+		  .text('Population')
+		  .attr('fill', '#888')
+		  .attr('font-weight', 'bold');
+
+		barChart.append('text')
+		  .attr('class', 'y-axis-label')
+		  .attr('transform', 'rotate(-90)')
+		  .attr('x', -height / 2)
+		  .attr('y', -margin.left + 15)
+		  .attr('text-anchor', 'middle')
+		  .text('State')
+		  .attr('fill', '#888')
+		  .attr('font-weight', 'bold');
+
+
+
+
+
+		
+
+		// Generate the pie chart
+		var pieChartDiv = d3.select('#pie-chart');
+		// Add your code to generate the pie chart here
+
+		// Adjust the positioning of the y-axis title
+		var yAxisTitle = pieChartDiv.select('.y-axis-label');
+		var yAxisTitleWidth = yAxisTitle.node().getBBox().width;
+
+		yAxisTitle.attr('x', -height / 2 - yAxisTitleWidth + 15);
+
+		// Adjust the positioning of the pie chart
+		// Add your code to adjust the positioning of the pie chart here
+
+
+
+		
+
+
+
+        // Generate the pie chart
+        // Use the data.pie_chart to create a pie chart using D3.js
+		// Generate the pie chart
+		var margin = { top: 450, right: 20, bottom: 20, left: 20 };
+		var width = Math.min(window.innerWidth, window.innerHeight) - margin.left - margin.right;
+		var height = width;
+
+		var pieChart = pieChartDiv.append('svg')
+		  .attr('width', width + margin.left + margin.right)
+		  .attr('height', height + margin.top + margin.bottom)
+		  .append('g')
+		  .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
+
+		var radius = Math.min(width, height) / 2;
+
+		var arc = d3.arc()
+		  .innerRadius(0)
+		  .outerRadius(radius);
+
+		var pie = d3.pie()
+		  .value(function(d) { return d.value; });
+
+		var colors = d3.scaleOrdinal(d3.schemeCategory10);
+
+		var arcs = pieChart.selectAll('arc')
+		  .data(pie(data.pie_chart))
+		  .enter()
+		  .append('g')
+		  .attr('class', 'arc');
+
+		arcs.append('path')
+		  .attr('d', arc)
+		  .attr('fill', function(d, i) { return colors(i); });
+
+		var labelArc = d3.arc()
+		  .innerRadius(radius * 0.5)
+		  .outerRadius(radius * 0.8);
+
+		arcs.append('text')
+		  .attr('transform', function(d) { return 'translate(' + labelArc.centroid(d) + ')'; })
+		  .attr('dy', '0.35em')
+		  .text(function(d) { return d.data.label + ': ' + d.data.value; })
+		  .style('text-anchor', function(d) {
+			// Adjust the label anchor based on its position
+			var centroid = labelArc.centroid(d);
+			var midAngle = Math.atan2(centroid[1], centroid[0]);
+			return (midAngle > Math.PI / 2 || midAngle < -Math.PI / 2) ? 'end' : 'start';
+		  })
+		  .call(wrapText, radius * 0.4); // Call the wrapText function to handle long labels
+
+		// Function to wrap long labels
+		function wrapText(text, maxWidth) {
+		  text.each(function() {
+			var text = d3.select(this);
+			var words = text.text().split(/\s+/).reverse();
+			var line = [];
+			var lineNumber = 0;
+			var lineHeight = 1.1;
+			var y = text.attr('y');
+			var dy = parseFloat(text.attr('dy'));
+			var tspan = text.text(null).append('tspan').attr('x', 0).attr('y', y).attr('dy', dy + 'em');
+			
+			var word = words.pop();
+			while (word) {
+			  line.push(word);
+			  tspan.text(line.join(' '));
+			  if (tspan.node().getComputedTextLength() > maxWidth && line.length > 1) {
+				line.pop();
+				tspan.text(line.join(' '));
+				line = [word];
+				tspan = text.append('tspan').attr('x', 0).attr('y', y).attr('dy', ++lineNumber * lineHeight + dy + 'em').text(word);
+			  }
+			  word = words.pop();
+			}
+		  });
+		}
+        // Generate the scatter plot
+        // Use the data.scatter_plot to create a scatter plot using D3.js
+      });
+  </script>
+</body>
+</html>

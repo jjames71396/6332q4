@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Data Visualization</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+  <h1>Data Visualization</h1>
+  <div id="bar-chart"></div>
+  <div id="pie-chart"></div>
+  <div id="scatter-plot"></div>
+
+  <script>
+    // Load the data from the Flask endpoint
+    // Generate the bar chart
+	d3.json('/data')
+	.then(function(data) {
+		// Generate the pie chart
+		// Generate the pie chart
+		var pieChartDiv = d3.select('#pie-chart');
+		var margin = { top: 150, right: 20, bottom: 150, left: 20 };
+		var width = pieChartDiv.node().getBoundingClientRect().width - margin.left - margin.right;
+		var height = 600 - margin.top - margin.bottom;
+		var radius = Math.min(width, height) / 2;
+
+		var pieChart = pieChartDiv.append('svg')
+		  .attr('width', width + margin.left + margin.right)
+		  .attr('height', height + margin.top + margin.bottom)
+		  .append('g')
+		  .attr('transform', 'translate(' + (width / 2 + margin.left) + ',' + (height / 2 + margin.top) + ')');
+		
+		//var color = d3.scaleOrdinal(d3.schemeCategory10);
+		var color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, data.pie_chart.length+1));
+		//var color = d3.scaleOrdinal().domain(data);
+		var pie = d3.pie()
+		  .sort(null)
+		  .value(function(d) { return d.value; });
+		  
+		var arc = d3.arc()
+		  .innerRadius(0)
+		  .outerRadius(radius);
+
+		var outerArc = d3.arc()
+		  .innerRadius(radius * 0.8)
+		  .outerRadius(radius * 1.5);
+
+		var arcs = pieChart.selectAll('.arc')
+		  .data(pie(data.pie_chart))
+		  .enter()
+		  .append('g')
+		  .attr('class', 'arc');
+
+		arcs.append('path')
+		  .attr('d', arc)
+		  .attr('fill', function(d) { return color(d.data.label); })
+		  .attr('stroke', 'white')
+		  .attr('stroke-width', 2);
+
+		arcs.append('polyline')
+		  .attr('class', 'label-line')
+		  .attr('stroke', '#999')
+		  .attr('stroke-width', 1)
+		  .attr('fill', 'none')
+		  .attr('points', function(d) {
+			var posA = arc.centroid(d); // Start point of line
+			var posB = outerArc.centroid(d); // End point of line
+			var posC = outerArc.centroid(d); // Position of label
+			var midAngle = Math.atan2(posC[1], posC[0]);
+			posC[0] = Math.cos(midAngle) * (radius * 1.4); // Adjust label position
+			posC[1] = Math.sin(midAngle) * (radius * 1.4);
+			return [posA, posB, posC];
+		  });
+
+		arcs.append('text')
+		  .attr('class', 'label-text')
+		  .attr('transform', function(d) {
+			var pos = outerArc.centroid(d);
+			var midAngle = Math.atan2(pos[1], pos[0]);
+			pos[0] = Math.cos(midAngle) * (radius * 1.5); // Adjust label position
+			pos[1] = Math.sin(midAngle) * (radius * 1.5);
+			return 'translate(' + pos + ')';
+		  })
+		  .attr('dy', '0.35em')
+		  .attr('text-anchor', function(d) {
+			var pos = outerArc.centroid(d);
+			return (Math.cos(Math.atan2(pos[1], pos[0])) < 0) ? 'end' : 'start';
+		  })
+		  .attr('fill', 'black')
+		  .text(function(d) { return d.data.label + ': (' + d.data.value + ') '  + d.data.percent + '%'; });
+
+
+
+
+
+        // Generate the scatter plot
+        // Use the data.scatter_plot to create a scatter plot using D3.js
+		
+      });
+  </script>
+</body>
+</html>
